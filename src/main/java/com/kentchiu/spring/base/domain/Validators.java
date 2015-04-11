@@ -3,15 +3,18 @@ package com.kentchiu.spring.base.domain;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.validation.*;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
 import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Validators {
 
@@ -67,6 +70,41 @@ public class Validators {
             List<FieldError> fieldErrors = result.getFieldErrors();
             List<ObjectError> globalErrors = result.getGlobalErrors();
             return om.writeValueAsString(ImmutableMap.of("globalErrors", globalErrors, "fieldErrors", fieldErrors));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "convert bind error to json fail";
+        }
+    }
+
+
+    public static String bindErrors2(BindingResult result) {
+        ObjectMapper om = new ObjectMapper();
+        try {
+            List<LinkedHashMap<String, Object>> globals = result.getGlobalErrors().stream().map(e -> {
+                LinkedHashMap<String, Object> map = Maps.newLinkedHashMap();
+                map.put("code", e.getCode());
+                map.put("message", e.getDefaultMessage());
+                return map;
+            }).collect(Collectors.toList());
+
+            List<LinkedHashMap<String, Object>> fields = result.getFieldErrors().stream().map(e -> {
+                LinkedHashMap<String, Object> map = Maps.newLinkedHashMap();
+                map.put("field", e.getField());
+                map.put("code", e.getCode());
+                map.put("rejected", e.getRejectedValue());
+                map.put("message", e.getDefaultMessage());
+                return map;
+            }).collect(Collectors.toList());
+            ImmutableMap<String, List<LinkedHashMap<String, Object>>> content = ImmutableMap.of("globalErrors", globals, "fieldErrors", fields);
+            String msg;
+            if (result.getErrorCount() == 1) {
+                msg = "There is a validation error, check content for detail";
+            } else {
+                msg = "There are " + result.getErrorCount() + " validation errors, check content for detail";
+            }
+            RestError restError = new RestError(404, "BindingException", msg);
+            restError.setContent(content);
+            return om.writeValueAsString(restError);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return "convert bind error to json fail";

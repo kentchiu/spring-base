@@ -12,6 +12,7 @@ import java.util.function.Function;
  * convert under line  string to lower camel
  * ex: foo_bar -> fooBar
  */
+@Deprecated
 public class CamelCaseFunction implements Function<Map<String, Object>, Map<String, Object>> {
 
     @Override

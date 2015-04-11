@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Deprecated
 public class DtoFunction<T> implements Function<T, Map<String, Object>> {
     private Map<String, DtoFunction> dtoMap = Maps.newHashMap();
     private String[] properties;

@@ -1,5 +1,6 @@
 package com.kentchiu.spring.base.domain;
 
+@Deprecated
 public class CodeBaseException extends RuntimeException {
 
     private String code;
