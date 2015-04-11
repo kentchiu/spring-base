@@ -1,11 +1,12 @@
 package com.kentchiu.spring.base.domain;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.validation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
 import javax.validation.Validation;
@@ -25,6 +26,10 @@ public class Validators {
     public static final String EMAIL = "Email";
     public static final String DATE_TIME_FORMAT = "DateTimeFormat";
     public static final String DUPLICATED = "Duplicated";
+    public static final String ILLEGAL_API_USAGE = "IllegalApiUsage";
+    public static final String RESOURCE_NOT_FOUND = "ResourceNotFound";
+    public static final String UNKNOWN = "Unknown";
+
 
     private static final String NOT_BLANK_MESSAGE = "may not be empty";
     private static final String MIN_MESSAGE = "must be greater than or equal to %d";
@@ -54,61 +59,58 @@ public class Validators {
     private Validators() {
     }
 
-    public static String error(String objectName, String code, String message, Object... arguments) {
+
+//    public static String error(String objectName, String code, String message, Object... arguments) {
+//        ObjectMapper om = new ObjectMapper();
+//        try {
+//            ObjectError error = new ObjectError(objectName, new String[]{code}, arguments, message);
+//            return om.writeValueAsString(error);
+//        } catch (JsonProcessingException e) {
+//            return "";
+//        }
+//    }
+
+//    public static String bindErrors(BindingResult result) {
+//        ObjectMapper om = new ObjectMapper();
+//        try {
+//            List<FieldError> fieldErrors = result.getFieldErrors();
+//            List<ObjectError> globalErrors = result.getGlobalErrors();
+//            return om.writeValueAsString(ImmutableMap.of("globalErrors", globalErrors, "fieldErrors", fieldErrors));
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//            return "convert bind error to json fail";
+//        }
+//    }
+
+
+    public static RestError toRestError(BindingResult result) {
         ObjectMapper om = new ObjectMapper();
-        try {
-            ObjectError error = new ObjectError(objectName, new String[]{code}, arguments, message);
-            return om.writeValueAsString(error);
-        } catch (JsonProcessingException e) {
-            return "";
+        List<LinkedHashMap<String, Object>> globals = result.getGlobalErrors().stream().map(e -> {
+            LinkedHashMap<String, Object> map = Maps.newLinkedHashMap();
+            map.put("code", e.getCode());
+            map.put("message", e.getDefaultMessage());
+            return map;
+        }).collect(Collectors.toList());
+
+        List<LinkedHashMap<String, Object>> fields = result.getFieldErrors().stream().map(e -> {
+            LinkedHashMap<String, Object> map = Maps.newLinkedHashMap();
+            map.put("field", e.getField());
+            map.put("code", e.getCode());
+            map.put("rejected", e.getRejectedValue());
+            map.put("message", e.getDefaultMessage());
+            return map;
+        }).collect(Collectors.toList());
+        ImmutableMap<String, List<LinkedHashMap<String, Object>>> content = ImmutableMap.of("globalErrors", globals, "fieldErrors", fields);
+        String msg;
+        if (result.getErrorCount() == 1) {
+            msg = "There is a validation error, check content for detail";
+        } else {
+            msg = "There are " + result.getErrorCount() + " validation errors, check content for detail";
         }
-    }
-
-    public static String bindErrors(BindingResult result) {
-        ObjectMapper om = new ObjectMapper();
-        try {
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            List<ObjectError> globalErrors = result.getGlobalErrors();
-            return om.writeValueAsString(ImmutableMap.of("globalErrors", globalErrors, "fieldErrors", fieldErrors));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "convert bind error to json fail";
-        }
-    }
-
-
-    public static String bindErrors2(BindingResult result) {
-        ObjectMapper om = new ObjectMapper();
-        try {
-            List<LinkedHashMap<String, Object>> globals = result.getGlobalErrors().stream().map(e -> {
-                LinkedHashMap<String, Object> map = Maps.newLinkedHashMap();
-                map.put("code", e.getCode());
-                map.put("message", e.getDefaultMessage());
-                return map;
-            }).collect(Collectors.toList());
-
-            List<LinkedHashMap<String, Object>> fields = result.getFieldErrors().stream().map(e -> {
-                LinkedHashMap<String, Object> map = Maps.newLinkedHashMap();
-                map.put("field", e.getField());
-                map.put("code", e.getCode());
-                map.put("rejected", e.getRejectedValue());
-                map.put("message", e.getDefaultMessage());
-                return map;
-            }).collect(Collectors.toList());
-            ImmutableMap<String, List<LinkedHashMap<String, Object>>> content = ImmutableMap.of("globalErrors", globals, "fieldErrors", fields);
-            String msg;
-            if (result.getErrorCount() == 1) {
-                msg = "There is a validation error, check content for detail";
-            } else {
-                msg = "There are " + result.getErrorCount() + " validation errors, check content for detail";
-            }
-            RestError restError = new RestError(404, "BindingException", msg);
-            restError.setContent(content);
-            return om.writeValueAsString(restError);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "convert bind error to json fail";
-        }
+        RestError restError = new RestError(404, "BindingException", msg);
+        restError.setContent(content);
+        return restError;
+        //return om.writeValueAsString(restError);
     }
 
     public static void validateMin(Errors errors, String field, int min) {

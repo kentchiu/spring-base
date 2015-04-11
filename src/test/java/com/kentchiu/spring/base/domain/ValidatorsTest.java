@@ -1,10 +1,15 @@
 package com.kentchiu.spring.base.domain;
 
 import com.google.common.collect.ImmutableMap;
-import com.jayway.jsonassert.JsonAssert;
 import org.junit.Test;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.MapBindingResult;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 
 public class ValidatorsTest {
@@ -15,13 +20,16 @@ public class ValidatorsTest {
         Validators.validateNotIn(bindingResult, "prop1", "a", "b", "c");
         Validators.validateNotBlank(bindingResult, "prop1");
         Validators.validateMin(bindingResult, "prop2", 1);
-        String json = Validators.bindErrors2(bindingResult);
+        RestError restError = Validators.toRestError(bindingResult);
 
-        JsonAssert.with(json).assertEquals("$.status", 404);
-        JsonAssert.with(json).assertEquals("$.code", "BindingException");
-        JsonAssert.with(json).assertEquals("$.message", "There are 2 validation errors, check content for detail");
-        JsonAssert.with(json).assertEquals("$.content.fieldErrors[0].field", "prop1");
-        JsonAssert.with(json).assertEquals("$.content.fieldErrors[0].code", "NotIn");
-        JsonAssert.with(json).assertEquals("$.content.fieldErrors[0].rejected", "");
+        assertThat(restError.getStatus(), is(404));
+        assertThat(restError.getCode(), is("BindingException"));
+        assertThat(restError.getMessage(), is("There are 2 validation errors, check content for detail"));
+        Map<String, List<Map<String, Object>>> content = (Map<String, List<Map<String, Object>>>) restError.getContent();
+        List<Map<String, Object>> fieldErrors = content.get("fieldErrors");
+        assertThat(fieldErrors.get(0).get("field"), is("prop1"));
+        assertThat(fieldErrors.get(0).get("code"), is("NotIn"));
+        assertThat(fieldErrors.get(0).get("rejected"), is(""));
+        assertThat(fieldErrors.get(0).get("message"), is("must one of {a,b,c}"));
     }
 }
