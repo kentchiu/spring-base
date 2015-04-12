@@ -22,7 +22,7 @@ public class ValidatorsTest {
         Validators.validateMin(bindingResult, "prop2", 1);
         RestError restError = Validators.toRestError(bindingResult);
 
-        assertThat(restError.getStatus(), is(404));
+        assertThat(restError.getStatus(), is(400));
         assertThat(restError.getCode(), is("BindingException"));
         assertThat(restError.getMessage(), is("There are 2 validation errors, check content for detail"));
         Map<String, List<Map<String, Object>>> content = (Map<String, List<Map<String, Object>>>) restError.getContent();

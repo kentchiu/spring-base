@@ -107,7 +107,7 @@ public class Validators {
         } else {
             msg = "There are " + result.getErrorCount() + " validation errors, check content for detail";
         }
-        RestError restError = new RestError(404, "BindingException", msg);
+        RestError restError = new RestError(400, "BindingException", msg);
         restError.setContent(content);
         return restError;
         //return om.writeValueAsString(restError);

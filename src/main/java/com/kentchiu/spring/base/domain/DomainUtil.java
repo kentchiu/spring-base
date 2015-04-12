@@ -35,7 +35,6 @@ public class DomainUtil {
         om.enable(SerializationFeature.INDENT_OUTPUT);
         try {
             String json = om.writeValueAsString(object);
-            System.out.println("------>  " + json);
             return json;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
