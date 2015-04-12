@@ -46,7 +46,7 @@ public class Validators {
     private static final String NULL_MESSAGE = "must be null";
     private static final String PAST_MESSAGE = "must be in the past";
     private static final String PATTERN_MESSAGE = "must match '%s'";
-    private static final String DUPLICATED_MESSAGE = "the value of %s key is duplicated";
+    private static final String DUPLICATED_MESSAGE = "the value of [%s] field is duplicated";
     private static final String SIZE_MESSAGE = "size must be between %d and %d";
     private static final String CREDIT_CARD_NUMBER_MESSAGE = "invalid credit card number";
     private static final String LENGTH_MESSAGE = "length must be between {min} and {max}";
@@ -221,7 +221,7 @@ public class Validators {
 
     public static void rejectDuplicated(Errors errors, String field) {
         Object value = errors.getFieldValue(field);
-        errors.rejectValue(field, DUPLICATED, new Object[]{value}, DUPLICATED_MESSAGE);
+        errors.rejectValue(field, DUPLICATED, new Object[]{value}, String.format(DUPLICATED_MESSAGE, field));
 
     }
 
