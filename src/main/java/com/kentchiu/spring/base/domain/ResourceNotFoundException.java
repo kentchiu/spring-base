@@ -36,7 +36,7 @@ public class ResourceNotFoundException extends RuntimeException {
         if (StringUtils.isNotBlank(message)) {
             return message;
         } else {
-            return String.format("resource %s@%d not found", target.getName(), id);
+            return String.format("resource %s@%d not found", target.getSimpleName(), id);
         }
     }
 
