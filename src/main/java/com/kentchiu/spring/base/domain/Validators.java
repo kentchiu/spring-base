@@ -59,30 +59,6 @@ public class Validators {
     private Validators() {
     }
 
-
-//    public static String error(String objectName, String code, String message, Object... arguments) {
-//        ObjectMapper om = new ObjectMapper();
-//        try {
-//            ObjectError error = new ObjectError(objectName, new String[]{code}, arguments, message);
-//            return om.writeValueAsString(error);
-//        } catch (JsonProcessingException e) {
-//            return "";
-//        }
-//    }
-
-//    public static String bindErrors(BindingResult result) {
-//        ObjectMapper om = new ObjectMapper();
-//        try {
-//            List<FieldError> fieldErrors = result.getFieldErrors();
-//            List<ObjectError> globalErrors = result.getGlobalErrors();
-//            return om.writeValueAsString(ImmutableMap.of("globalErrors", globalErrors, "fieldErrors", fieldErrors));
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//            return "convert bind error to json fail";
-//        }
-//    }
-
-
     public static RestError toRestError(BindingResult result) {
         ObjectMapper om = new ObjectMapper();
         List<LinkedHashMap<String, Object>> globals = result.getGlobalErrors().stream().map(e -> {
@@ -197,18 +173,6 @@ public class Validators {
 
     }
 
-//    public static void validateDateStringFormat(Errors errors, String field, String pattern) {
-//        Object value = errors.getFieldValue(field);
-//        if (value != null) {
-//            DateTimeFormatter fmt = DateTimeFormat.forPattern(pattern);
-//            try {
-//                fmt.parseDateTime(value.toString());
-//            } catch (IllegalArgumentException e) {
-//                errors.rejectValue(field, DATE_TIME_FORMAT, String.format(PATTERN_MESSAGE, pattern));
-//            }
-//        }
-//
-//    }
 
     public static void validateNestedBean(Errors errors, String nestedPath, Object nestedTarget) {
         try {
