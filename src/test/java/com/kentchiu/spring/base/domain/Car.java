@@ -5,7 +5,6 @@ public class Car {
 
     private String color;
 
-
     @Option(value = {"white", "black", "red"})
     public String getColor() {
         return color;

@@ -3,20 +3,17 @@ package com.kentchiu.spring.base.domain;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.collect.Iterables;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.converters.DateConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.FatalBeanException;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -26,6 +23,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class DomainUtil {
+
+    private static Logger logger = LoggerFactory.getLogger(DomainUtil.class);
 
     private DomainUtil() {
     }
@@ -51,50 +50,55 @@ public class DomainUtil {
     }
 
 
-    public static void copyNotNullProperties(Object source, Object target, Class<?> editable, String... ignoreProperties)
-            throws BeansException {
+    public static void copyNotNullProperties(Object source, Object target, String... ignoreProperties) {
 
-        Assert.notNull(source, "Source must not be null");
-        Assert.notNull(target, "Target must not be null");
+        PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(source.getClass());
 
-        Class<?> actualEditable = target.getClass();
-        if (editable != null) {
-            if (!editable.isInstance(target)) {
-                throw new IllegalArgumentException("Target class [" + target.getClass().getName() +
-                        "] not assignable to Editable class [" + editable.getName() + "]");
+        List<String> nullValueProperties = Arrays.stream(pds).filter(pd -> {
+            try {
+                Object invoke = pd.getReadMethod().invoke(source);
+                return invoke == null;
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                return true;
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+                return true;
             }
-            actualEditable = editable;
-        }
-        PropertyDescriptor[] targetPds = BeanUtils.getPropertyDescriptors(actualEditable);
-        List<String> ignoreList = (ignoreProperties != null ? Arrays.asList(ignoreProperties) : null);
+        }).map(pd -> pd.getName()).collect(Collectors.toList());
+        logger.debug("ignore property: {}", nullValueProperties);
+        BeanUtils.copyProperties(source, target, Iterables.toArray(nullValueProperties, String.class));
 
-        for (PropertyDescriptor targetPd : targetPds) {
-            Method writeMethod = targetPd.getWriteMethod();
-            if (writeMethod != null && (ignoreList == null || !ignoreList.contains(targetPd.getName()))) {
-                PropertyDescriptor sourcePd = BeanUtils.getPropertyDescriptor(source.getClass(), targetPd.getName());
-                if (sourcePd != null) {
-                    Method readMethod = sourcePd.getReadMethod();
-                    if (readMethod != null &&
-                            ClassUtils.isAssignable(writeMethod.getParameterTypes()[0], readMethod.getReturnType())) {
-                        try {
-                            if (!Modifier.isPublic(readMethod.getDeclaringClass().getModifiers())) {
-                                readMethod.setAccessible(true);
-                            }
-                            Object value = readMethod.invoke(source);
-                            if (!Modifier.isPublic(writeMethod.getDeclaringClass().getModifiers())) {
-                                writeMethod.setAccessible(true);
-                            }
-                            if (value != null) {
-                                writeMethod.invoke(target, value);
-                            }
-                        } catch (Throwable ex) {
-                            throw new FatalBeanException(
-                                    "Could not copy property '" + targetPd.getName() + "' from source to target", ex);
-                        }
-                    }
-                }
+        List<String> dateProperties = Arrays.stream(BeanUtils.getPropertyDescriptors(target.getClass()))
+                .filter(pd -> pd.getPropertyType().isAssignableFrom(Date.class))
+                .map(pd -> pd.getName()).collect(Collectors.toList());
+
+        for (String p : dateProperties) {
+            try {
+                Date dateValue = getDateValue(source, p);
+                PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(target.getClass(), p);
+                pd.getWriteMethod().invoke(target, dateValue);
+                logger.trace("set date property {} to {}", p, dateValue);
+            } catch (Exception e) {
+                logger.warn("set date property {} fail", e);
             }
         }
+    }
+
+    private static Date getDateValue(Object source, String p) throws IllegalAccessException, InvocationTargetException {
+        PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(source.getClass(), p);
+        if (pd == null) {
+            return null;
+        }
+        Object value = pd.getReadMethod().invoke(source);
+        if (value != null && StringUtils.isNotBlank(value.toString())) {
+            try {
+                return DateUtils.parseDate(value.toString(), "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm");
+            } catch (ParseException e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     public static void copyProperties(Map<String, Object> source, Object target, String... properties) {
