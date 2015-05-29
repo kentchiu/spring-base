@@ -75,6 +75,7 @@ public class DomainUtil {
 
         for (String p : dateProperties) {
             try {
+
                 Date dateValue = getDateValue(source, p);
                 PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(target.getClass(), p);
                 pd.getWriteMethod().invoke(target, dateValue);
@@ -91,7 +92,10 @@ public class DomainUtil {
             return null;
         }
         Object value = pd.getReadMethod().invoke(source);
-        if (value != null && StringUtils.isNotBlank(value.toString())) {
+
+        if (value instanceof Date) {
+            return (Date) value;
+        } else if (value != null && StringUtils.isNotBlank(value.toString())) {
             try {
                 return DateUtils.parseDate(value.toString(), "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm");
             } catch (ParseException e) {
@@ -101,6 +105,14 @@ public class DomainUtil {
         return null;
     }
 
+    /**
+     * Use copyNotNullProperties instead
+     *
+     * @param source
+     * @param target
+     * @param properties
+     */
+    @Deprecated
     public static void copyProperties(Map<String, Object> source, Object target, String... properties) {
         registerConverters();
 
@@ -135,11 +147,20 @@ public class DomainUtil {
         }
     }
 
+    /**
+     * Use copyNotNullProperties instead
+     *
+     * @param source
+     * @param target
+     * @param properties
+     */
+    @Deprecated
     public static void copyProperties(Object source, Object target, String... properties) {
         registerConverters();
         BeanUtils.copyProperties(source, target, properties);
     }
 
+    @Deprecated
     private static void registerConverters() {
         Date defaultValue = null;
         DateConverter converter = new DateConverter(defaultValue);
