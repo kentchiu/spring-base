@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Iterables;
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.beanutils.converters.DateConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -14,12 +12,14 @@ import org.springframework.beans.BeanUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class DomainUtil {
@@ -95,7 +95,7 @@ public class DomainUtil {
 
         if (value instanceof Date) {
             return (Date) value;
-        } else if (value != null && StringUtils.isNotBlank(value.toString())) {
+        } else if (StringUtils.isNotBlank(value.toString())) {
             try {
                 return DateUtils.parseDate(value.toString(), "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm");
             } catch (ParseException e) {
@@ -105,67 +105,8 @@ public class DomainUtil {
         return null;
     }
 
-    /**
-     * Use copyNotNullProperties instead
-     *
-     * @param source
-     * @param target
-     * @param properties
-     */
-    @Deprecated
-    public static void copyProperties(Map<String, Object> source, Object target, String... properties) {
-        registerConverters();
 
-        if (properties.length == 0) {
-            properties = allPropertiesAsArray(target.getClass());
-        }
 
-        for (String property : properties) {
-            Object value = source.get(property);
-            try {
-                if (source.containsKey(property)) {
-                    Class<?> type = BeanUtils.findPropertyType(property, target.getClass());
-                    if (Date.class.equals(type)) {
-                        if (value != null && StringUtils.isNotBlank(value.toString())) {
-                            value = DateUtils.parseDate(value.toString(), "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm");
-                        }
-                    }
-                    if (BigDecimal.class.equals(type)) {
-                        if (value == null || StringUtils.isBlank(value.toString())) {
-                            value = BigDecimal.ZERO;
-                        }
-                    }
-                    if (!(value instanceof Map)) {
-                        org.apache.commons.beanutils.BeanUtils.setProperty(target, property, value);
-                    }
-                    //logger.trace("set property [{}] to [{}]", params, value);
-                }
-            } catch (IllegalAccessException | InvocationTargetException | ParseException e) {
-                //logger.warn("set property [" + property + "] fail", e);
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Use copyNotNullProperties instead
-     *
-     * @param source
-     * @param target
-     * @param properties
-     */
-    @Deprecated
-    public static void copyProperties(Object source, Object target, String... properties) {
-        registerConverters();
-        BeanUtils.copyProperties(source, target, properties);
-    }
-
-    @Deprecated
-    private static void registerConverters() {
-        Date defaultValue = null;
-        DateConverter converter = new DateConverter(defaultValue);
-        ConvertUtils.register(converter, Date.class);
-    }
 
     public static String allPropertiesAsString(Class clazz) {
         PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(clazz);

@@ -51,4 +51,16 @@ public class DomainUtilTest extends TestCase {
         assertThat(target.getDate(), is(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss")));
     }
 
+    public void testDateProperties_from_null_data_to_date() throws Exception {
+        String dateStr = "2015-01-01 12:33:56";
+        TestBean source = new TestBean();
+
+        TestBean target = new TestBean();
+        target.setDate(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss"));
+        DomainUtil.copyNotNullProperties(source, target);
+
+        assertThat(target.getDate(), is(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss")));
+    }
+
+
 }
