@@ -75,11 +75,15 @@ public class DomainUtil {
 
         for (String p : dateProperties) {
             try {
+                PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(source.getClass(), p);
+                if (pd != null) {
 
                 Date dateValue = getDateValue(source, p);
-                PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(target.getClass(), p);
-                pd.getWriteMethod().invoke(target, dateValue);
+                    PropertyDescriptor pd2 = BeanUtils.getPropertyDescriptor(target.getClass(), p);
+                    pd2.getWriteMethod().invoke(target, dateValue);
+
                 logger.trace("set date property {} to {}", p, dateValue);
+                }
             } catch (Exception e) {
                 logger.warn("set date property {} fail", e);
             }
