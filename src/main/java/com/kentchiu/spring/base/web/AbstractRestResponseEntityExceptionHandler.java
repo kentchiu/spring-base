@@ -1,6 +1,7 @@
 package com.kentchiu.spring.base.web;
 
 
+import com.google.common.base.Joiner;
 import com.kentchiu.spring.base.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,6 +35,16 @@ public abstract class AbstractRestResponseEntityExceptionHandler extends Respons
         }
         return new ResponseEntity<>(json, headers, status);
     }
+
+    @ExceptionHandler({CodeBaseException.class})
+    protected ResponseEntity<Object> handleCodeBaseException(final CodeBaseException ex, final WebRequest request) {
+        logger.error("400 Status Code", ex);
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        RestError error = new RestError(status.value(), ex.getClass().getSimpleName(), ex.getMessage());
+        error.setContent(Joiner.on('\n').join(ex.getContents()));
+        return handleExceptionInternal(error, ex, new HttpHeaders(), status, request);
+    }
+
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
