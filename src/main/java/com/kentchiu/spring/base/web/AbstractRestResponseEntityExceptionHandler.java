@@ -6,6 +6,7 @@ import com.kentchiu.spring.base.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,6 +88,13 @@ public abstract class AbstractRestResponseEntityExceptionHandler extends Respons
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         RestError error = new RestError(status.value(), Validators.UNKNOWN, "Unknown internal server error");
         error.setContent(msg);
+        return handleExceptionInternal(error, ex, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler({EmptyResultDataAccessException.class})
+    public ResponseEntity<Object> handleEmptyResultDataAccessException(EmptyResultDataAccessException ex, final WebRequest request) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        RestError error = new RestError(status.value(), ResourceNotFoundException.class.getSimpleName(), "Resource Not Found");
         return handleExceptionInternal(error, ex, new HttpHeaders(), status, request);
     }
 
