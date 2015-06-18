@@ -30,7 +30,7 @@ public abstract class AbstractRestResponseEntityExceptionHandler extends Respons
 
     protected ResponseEntity<Object> handleExceptionInternal(RestError error, Exception ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         String json = DomainUtil.toJson(error);
-        logger.error("controller exception", json);
+        logger.error("controller exception", ex);
         if (HttpStatus.INTERNAL_SERVER_ERROR.equals(status)) {
             request.setAttribute("javax.servlet.error.exception", ex, WebRequest.SCOPE_REQUEST);
         }
