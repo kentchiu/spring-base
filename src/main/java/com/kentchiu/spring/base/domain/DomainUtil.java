@@ -117,19 +117,6 @@ public class DomainUtil {
         } else {
             return null;
         }
-
-//        if (srcValue instanceof Date) {
-//            return (Date) srcValue;
-//        } else if (srcValue == null) {
-//            return null;
-//        } else if (StringUtils.isNotBlank(srcValue.toString())) {
-//            try {
-//                return DateUtils.parseDate(srcValue.toString(), "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm");
-//            } catch (ParseException e) {
-//                return null;
-//            }
-//        }
-//        return null;
     }
 
 
