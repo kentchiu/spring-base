@@ -28,6 +28,13 @@ public abstract class AbstractRestResponseEntityExceptionHandler extends Respons
         return handleExceptionInternal(error, ex, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        RestError restError = new RestError();
+        restError.setCode(ex.getClass().getSimpleName());
+        restError.setContent(ex.getMessage());
+        return handleExceptionInternal(restError, ex, headers, status, request);
+    }
+
     protected ResponseEntity<Object> handleExceptionInternal(RestError error, Exception ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         String json = DomainUtil.toJson(error);
         logger.error("controller exception", ex);
