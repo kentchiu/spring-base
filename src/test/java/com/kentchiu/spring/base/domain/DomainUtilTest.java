@@ -79,6 +79,19 @@ public class DomainUtilTest {
         assertThat(target.getDate(), nullValue());
     }
 
+    @Test
+    public void testDateProperties_from_null_date_string_to_date_should_keeping_source_date_value() throws Exception {
+        DateBean source = new DateBean();
+        source.setDate(null);
+
+        TestBean target = new TestBean();
+        String dateStr = "2015-01-01 12:33:56";
+        target.setDate(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss"));
+        DomainUtil.copyNotNullProperties(source, target);
+
+        assertThat(target.getDate(), is(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss")));
+    }
+
 
     @Test
     public void testDateProperties_date_property_should_keep_without_same_property() throws Exception {

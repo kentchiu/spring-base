@@ -102,7 +102,9 @@ public class DomainUtil {
 
         if (pd.getReadMethod().getReturnType().equals(String.class)) {
             String strValue = (String) srcValue;
-            if (StringUtils.isBlank(strValue)) {
+            if (strValue == null) {
+                return (Date) pd.getReadMethod().invoke(target);
+            } else if (StringUtils.isBlank(strValue)) {
                 return null;
             } else {
                 try {
