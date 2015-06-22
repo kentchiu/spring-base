@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.util.MatcherAssertionErrors.assertThat;
 
 public class DomainUtilTest {
@@ -55,7 +56,7 @@ public class DomainUtilTest {
     }
 
     @Test
-    public void testDateProperties_from_null_data_to_date() throws Exception {
+    public void testDateProperties_from_null_date_to_date_should_keeping_date_value() throws Exception {
         String dateStr = "2015-01-01 12:33:56";
         TestBean source = new TestBean();
 
@@ -64,6 +65,18 @@ public class DomainUtilTest {
         DomainUtil.copyNotNullProperties(source, target);
 
         assertThat(target.getDate(), is(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss")));
+    }
+
+    @Test
+    public void testDateProperties_from_empty_date_string_to_date_should_clean_date_value() throws Exception {
+        DateBean source = new DateBean();
+        source.setDate("");
+
+        TestBean target = new TestBean();
+        target.setDate(DateUtils.parseDate("2015-01-01 12:33:56", "yyyy-MM-dd HH:mm:ss"));
+        DomainUtil.copyNotNullProperties(source, target);
+
+        assertThat(target.getDate(), nullValue());
     }
 
 
@@ -78,5 +91,16 @@ public class DomainUtilTest {
 
         assertThat(target.getDate(), is(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss")));
     }
+
+    @Test
+    public void testDateProperties_both_date_property_all_null() throws Exception {
+        TestBean source = new TestBean();
+
+        TestBean target = new TestBean();
+        DomainUtil.copyNotNullProperties(source, target);
+
+        assertThat(target.getDate(), nullValue());
+    }
+
 
 }

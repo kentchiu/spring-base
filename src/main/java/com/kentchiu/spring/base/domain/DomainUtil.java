@@ -68,21 +68,24 @@ public class DomainUtil {
         }).map(pd -> pd.getName()).collect(Collectors.toList());
         logger.debug("ignore property: {}", nullValueProperties);
         BeanUtils.copyProperties(source, target, Iterables.toArray(nullValueProperties, String.class));
+        copyDateProperties(source, target);
+    }
 
+    private static void copyDateProperties(Object source, Object target) {
+        // 處理 target 的 date properties
         List<String> dateProperties = Arrays.stream(BeanUtils.getPropertyDescriptors(target.getClass()))
                 .filter(pd -> pd.getPropertyType().isAssignableFrom(Date.class))
                 .map(pd -> pd.getName()).collect(Collectors.toList());
 
         for (String p : dateProperties) {
             try {
+                // 取得source中對應名稱的屬性
                 PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(source.getClass(), p);
                 if (pd != null) {
-
-                Date dateValue = getDateValue(source, p);
+                    Date srcDateValue = getDateValueOfSource(source, target, p);
                     PropertyDescriptor pd2 = BeanUtils.getPropertyDescriptor(target.getClass(), p);
-                    pd2.getWriteMethod().invoke(target, dateValue);
-
-                logger.trace("set date property {} to {}", p, dateValue);
+                    pd2.getWriteMethod().invoke(target, srcDateValue);
+                    logger.trace("set date property {} to {}", p, srcDateValue);
                 }
             } catch (Exception e) {
                 logger.warn("set date property {} fail", e);
@@ -90,26 +93,44 @@ public class DomainUtil {
         }
     }
 
-    private static Date getDateValue(Object source, String p) throws IllegalAccessException, InvocationTargetException {
+    private static Date getDateValueOfSource(Object source, Object target, String p) throws IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(source.getClass(), p);
         if (pd == null) {
             return null;
         }
-        Object value = pd.getReadMethod().invoke(source);
+        Object srcValue = pd.getReadMethod().invoke(source);
 
-        if (value instanceof Date) {
-            return (Date) value;
-        } else if (StringUtils.isNotBlank(value.toString())) {
-            try {
-                return DateUtils.parseDate(value.toString(), "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm");
-            } catch (ParseException e) {
+        if (pd.getReadMethod().getReturnType().equals(String.class)) {
+            String strValue = (String) srcValue;
+            if (StringUtils.isBlank(strValue)) {
                 return null;
+            } else {
+                try {
+                    return DateUtils.parseDate(srcValue.toString(), "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm");
+                } catch (ParseException e) {
+                    return null;
+                }
             }
+        } else if (pd.getReadMethod().getReturnType().isAssignableFrom(Date.class)) {
+            Date dateValue = (Date) srcValue;
+            return dateValue != null ? dateValue : (Date) pd.getReadMethod().invoke(target);
+        } else {
+            return null;
         }
-        return null;
+
+//        if (srcValue instanceof Date) {
+//            return (Date) srcValue;
+//        } else if (srcValue == null) {
+//            return null;
+//        } else if (StringUtils.isNotBlank(srcValue.toString())) {
+//            try {
+//                return DateUtils.parseDate(srcValue.toString(), "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm");
+//            } catch (ParseException e) {
+//                return null;
+//            }
+//        }
+//        return null;
     }
-
-
 
 
     public static String allPropertiesAsString(Class clazz) {
