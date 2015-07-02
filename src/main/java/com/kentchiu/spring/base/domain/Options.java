@@ -6,11 +6,11 @@ import java.lang.annotation.*;
 
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {OptionValidator.class})
+@Constraint(validatedBy = {OptionsValidator.class})
 @Documented
-public @interface Option {
+public @interface Options {
 
-    String message() default "must one of {value}";
+    String message() default "must in {value}";
 
     Class<?>[] groups() default {};
 

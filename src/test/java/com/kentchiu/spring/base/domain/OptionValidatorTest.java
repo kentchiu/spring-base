@@ -11,8 +11,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class CarTest {
-
+public class OptionValidatorTest {
     private static Validator validator;
 
     @BeforeClass
@@ -28,6 +27,7 @@ public class CarTest {
         Set<ConstraintViolation<Car>> constraintViolations =
                 validator.validate(car);
         assertEquals(0, constraintViolations.size());
+
     }
 
     @Test

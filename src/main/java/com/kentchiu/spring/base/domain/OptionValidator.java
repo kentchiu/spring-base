@@ -13,6 +13,7 @@ public class OptionValidator implements ConstraintValidator<Option, String> {
         this.options = constraintAnnotation.value();
     }
 
+
     @Override
     public boolean isValid(String value, ConstraintValidatorContext constraintContext) {
         if (value == null || "".equals(value)) {
