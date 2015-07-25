@@ -3,16 +3,18 @@ package com.kentchiu.spring.base.domain;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.UUID;
+
 public class ResourceNotFoundException extends CodeBaseException {
 
     private Class target;
-    private String id;
+    private UUID uuid;
     private String message;
 
-    public ResourceNotFoundException(Class<?> clazz, String id) {
+    public ResourceNotFoundException(Class<?> clazz, UUID uuid) {
         super();
         this.target = clazz;
-        this.id = id;
+        this.uuid = uuid;
     }
 
     public Class getTarget() {
@@ -23,13 +25,12 @@ public class ResourceNotFoundException extends CodeBaseException {
         this.target = target;
     }
 
-    public String getId() {
-        return id;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void setId(String id) {
-        this.id = id;
-
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     @Override
@@ -46,6 +47,6 @@ public class ResourceNotFoundException extends CodeBaseException {
     }
 
     private String defaultMessage() {
-        return String.format("resource %s@%s not found", target.getSimpleName(), id);
+        return String.format("resource %s@%s not found", target.getSimpleName(), uuid);
     }
 }
