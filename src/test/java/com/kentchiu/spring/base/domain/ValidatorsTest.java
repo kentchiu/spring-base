@@ -7,6 +7,7 @@ import org.springframework.validation.MapBindingResult;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -31,5 +32,20 @@ public class ValidatorsTest {
         assertThat(fieldErrors.get(0).get("code"), is("NotIn"));
         assertThat(fieldErrors.get(0).get("rejected"), is(""));
         assertThat(fieldErrors.get(0).get("message"), is("must one of {a,b,c}"));
+    }
+
+    @Test
+    public void testValidateUuid() throws Exception {
+        BindingResult bindingResult = new MapBindingResult(ImmutableMap.of("uuid", UUID.randomUUID().toString(), "uuid2", "xxx", "uuid3", ""), "domain");
+        Validators.validateUuid(bindingResult, "uuid");
+        Validators.validateUuid(bindingResult, "uuid2");
+        Validators.validateUuid(bindingResult, "uuid3");
+
+        assertThat(bindingResult.getFieldErrorCount(), is(1));
+
+        assertThat(bindingResult.getFieldError("uuid2").getField(), is("uuid2"));
+        assertThat(bindingResult.getFieldError("uuid2").getCode(), is("UUID"));
+        assertThat(bindingResult.getFieldError("uuid2").getRejectedValue(), is("xxx"));
+        assertThat(bindingResult.getFieldError("uuid2").getDefaultMessage(), is("UUID format : 8-4-4-4-12"));
     }
 }

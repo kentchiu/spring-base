@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -13,6 +14,7 @@ import javax.validation.Validation;
 import javax.validation.ValidatorFactory;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -29,6 +31,7 @@ public class Validators {
     public static final String ILLEGAL_API_USAGE = "IllegalApiUsage";
     public static final String RESOURCE_NOT_FOUND = "ResourceNotFound";
     public static final String UNKNOWN = "Unknown";
+    public static final String UUID2 = "UUID";
 
 
     private static final String NOT_BLANK_MESSAGE = "may not be empty";
@@ -54,6 +57,8 @@ public class Validators {
     private static final String RANGE_MESSAGE = "must be between {min} and {max}";
     private static final String SAFE_HTML_MESSAGE = "may have unsafe html content";
     private static final String URL_MESSAGE = "must be a valid URL";
+    private static final String UUID2_MESSAGE = "UUID format : 8-4-4-4-12";
+
     private static ValidatorFactory validatorFactory;
 
     private Validators() {
@@ -194,6 +199,19 @@ public class Validators {
             errors.rejectValue(key, Validators.NOT_IN, keys, String.format(NOT_IN_MESSAGE, ArrayUtils.toString(keys)));
         }
     }
+
+    public static void validateUuid(Errors errors, String field) {
+        Object value = errors.getFieldValue(field);
+        if (value != null && StringUtils.isNotBlank(value.toString())) {
+            UUID uuid = null;
+            try {
+                UUID.fromString(value.toString());
+            } catch (Exception e) {
+                errors.rejectValue(field, UUID2, UUID2_MESSAGE);
+            }
+        }
+    }
+
 }
 
 class EmailValidator {
