@@ -48,4 +48,19 @@ public class ValidatorsTest {
         assertThat(bindingResult.getFieldError("uuid2").getRejectedValue(), is("xxx"));
         assertThat(bindingResult.getFieldError("uuid2").getDefaultMessage(), is("UUID format : 8-4-4-4-12"));
     }
+
+    @Test
+    public void testValidateMac() throws Exception {
+        BindingResult bindingResult = new MapBindingResult(ImmutableMap.of("mac", "9e:40:44:4d:fe:cf", "mac2", "ff:00", "mac3", ""), "domain");
+        Validators.validateMac(bindingResult, "mac");
+        Validators.validateMac(bindingResult, "mac2");
+        Validators.validateMac(bindingResult, "mac3");
+
+        assertThat(bindingResult.getFieldErrorCount(), is(1));
+
+        assertThat(bindingResult.getFieldError("mac2").getField(), is("mac2"));
+        assertThat(bindingResult.getFieldError("mac2").getCode(), is(Validators.MAC));
+        assertThat(bindingResult.getFieldError("mac2").getRejectedValue(), is("ff:00"));
+        assertThat(bindingResult.getFieldError("mac2").getDefaultMessage(), is("MAC format : 00:00:00:00:00:00"));
+    }
 }

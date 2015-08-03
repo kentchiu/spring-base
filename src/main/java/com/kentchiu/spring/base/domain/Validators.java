@@ -32,6 +32,7 @@ public class Validators {
     public static final String RESOURCE_NOT_FOUND = "ResourceNotFound";
     public static final String UNKNOWN = "Unknown";
     public static final String UUID2 = "UUID";
+    public static final String MAC = "MAC";
 
 
     private static final String NOT_BLANK_MESSAGE = "may not be empty";
@@ -58,6 +59,7 @@ public class Validators {
     private static final String SAFE_HTML_MESSAGE = "may have unsafe html content";
     private static final String URL_MESSAGE = "must be a valid URL";
     private static final String UUID2_MESSAGE = "UUID format : 8-4-4-4-12";
+    private static final String MAC_MESSAGE = "MAC format : 00:00:00:00:00:00";
 
     private static ValidatorFactory validatorFactory;
 
@@ -154,6 +156,17 @@ public class Validators {
         }
     }
 
+    public static void validateMac(Errors errors, String field) {
+        Object value = errors.getFieldValue(field);
+        if (value == null || StringUtils.isBlank(value.toString())) {
+            return;
+        }
+        MacValidator validator = new MacValidator();
+        if (!validator.validate(value.toString())) {
+            errors.rejectValue(field, MAC, new Object[]{}, String.format(MAC_MESSAGE));
+        }
+    }
+
     public static void validateBean(Errors errors, Object target) {
         if (validatorFactory == null) {
             validatorFactory = Validation.buildDefaultValidatorFactory();
@@ -224,6 +237,28 @@ class EmailValidator {
 
     public EmailValidator() {
         pattern = Pattern.compile(EMAIL_PATTERN);
+    }
+
+    /**
+     * Validate hex with regular expression
+     *
+     * @param hex hex for validation
+     * @return true valid hex, false invalid hex
+     */
+    public boolean validate(final String hex) {
+        matcher = pattern.matcher(hex);
+        return matcher.matches();
+
+    }
+}
+
+class MacValidator {
+    private static final String MAC_PATTERN = "([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])";
+    private Pattern pattern;
+    private Matcher matcher;
+
+    public MacValidator() {
+        pattern = Pattern.compile(MAC_PATTERN);
     }
 
     /**
