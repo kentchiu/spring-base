@@ -46,13 +46,12 @@ public abstract class AbstractRestResponseEntityExceptionHandler extends Respons
 
     @ExceptionHandler({CodeBaseException.class})
     protected ResponseEntity<Object> handleCodeBaseException(final CodeBaseException ex, final WebRequest request) {
-        logger.error("400 Status Code", ex);
-        HttpStatus status = HttpStatus.BAD_REQUEST;
+        logger.error("CodeBaseException", ex);
+        HttpStatus status = ex.getStatus() == null ? HttpStatus.BAD_REQUEST : ex.getStatus();
         RestError error = new RestError(status.value(), ex.getClass().getSimpleName(), ex.getMessage());
         error.setContent(Joiner.on('\n').join(ex.getContents()));
         return handleExceptionInternal(error, ex, new HttpHeaders(), status, request);
     }
-
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
@@ -61,14 +60,12 @@ public abstract class AbstractRestResponseEntityExceptionHandler extends Respons
         return handleExceptionInternal(error, ex, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-
     @ExceptionHandler({IllegalApiUsageException.class})
     public ResponseEntity<Object> handleIllegalApiUsageException(IllegalApiUsageException ex, final WebRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        RestError error = new RestError(status.value(), Validators.ILLEGAL_API_USAGE, "Illegal Api Usage");
+        RestError error = new RestError(status.value(), Validators.ILLEGAL_API_USAGE, ex.getMessage());
         return handleExceptionInternal(error, ex, new HttpHeaders(), status, request);
     }
-
 
     @ExceptionHandler({ResourceNotFoundException.class})
     protected ResponseEntity<Object> handleResourceNotFoundException(final ResourceNotFoundException ex, final WebRequest request) {
@@ -86,7 +83,6 @@ public abstract class AbstractRestResponseEntityExceptionHandler extends Respons
         RestError error = new RestError(status.value(), ex.getClass().getSimpleName(), ex.getMessage());
         return handleExceptionInternal(error, ex, new HttpHeaders(), status, request);
     }
-
 
     @ExceptionHandler({NullPointerException.class, IllegalArgumentException.class, IllegalStateException.class})
     public ResponseEntity<Object> handleInternalServerError(final RuntimeException ex, final WebRequest request) {
