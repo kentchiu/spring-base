@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Iterables;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -67,14 +68,17 @@ public class DomainUtil {
             }
         }).map(pd -> pd.getName()).collect(Collectors.toList());
         logger.debug("ignore property: {}", nullValueProperties);
-        BeanUtils.copyProperties(source, target, Iterables.toArray(nullValueProperties, String.class));
-        copyDateProperties(source, target);
+        String[] nulls = Iterables.toArray(nullValueProperties, String.class);
+        String[] ignores = ArrayUtils.addAll(ignoreProperties, nulls);
+        BeanUtils.copyProperties(source, target, ignores);
+        copyDateProperties(source, target, ignores);
     }
 
-    private static void copyDateProperties(Object source, Object target) {
+    private static void copyDateProperties(Object source, Object target, String... ignoreProperties) {
         // 處理 target 的 date properties
         List<String> dateProperties = Arrays.stream(BeanUtils.getPropertyDescriptors(target.getClass()))
                 .filter(pd -> pd.getPropertyType().isAssignableFrom(Date.class))
+                .filter(pd -> !ArrayUtils.contains(ignoreProperties, pd.getName()))
                 .map(pd -> pd.getName()).collect(Collectors.toList());
 
         for (String p : dateProperties) {

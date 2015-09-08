@@ -32,6 +32,28 @@ public class DomainUtilTest {
     }
 
     @Test
+    public void testIgnoreProperties() throws Exception {
+        TestBean source = new TestBean();
+        source.setStringProp("str1");
+        source.setStringProp2("str2");
+        source.setStringProp3("str3");
+        String dateStr = "2015-01-01 12:33:56";
+        source.setDate(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss"));
+        source.setBigDecimal(BigDecimal.TEN);
+        source.setIntegerProp(99);
+
+        TestBean target = new TestBean();
+        DomainUtil.copyNotNullProperties(source, target, "stringProp", "stringProp2", "date");
+
+        assertThat(target.getStringProp(), nullValue());
+        assertThat(target.getStringProp2(), nullValue());
+        assertThat(target.getStringProp3(), is("str3"));
+        assertThat(target.getBigDecimal(), is(BigDecimal.TEN));
+        assertThat(target.getIntegerProp(), is(99));
+        assertThat(target.getDate(), nullValue());
+    }
+
+    @Test
     public void testDateProperties_from_string_to_date() throws Exception {
         DateBean source = new DateBean();
         String dateStr = "2015-01-01 12:33:56";
