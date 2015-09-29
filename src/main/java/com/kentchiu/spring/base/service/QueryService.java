@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.torpedoquery.jpa.Query;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +27,12 @@ public interface QueryService<T> {
     static Long count(EntityManager em, String sql, Map<String, Object> params) {
         TypedQuery<Long> countQuery = em.createQuery(QueryUtils.createCountQueryFor(sql), Long.class);
         params.forEach((k, v) -> countQuery.setParameter(k, v));
-        return countQuery.getSingleResult();
+        try {
+            return countQuery.getSingleResult();
+        } catch (PersistenceException e) {
+            logger.error("Query Error: " + sql, e);
+            return 0L;
+        }
     }
 
     JpaRepository<T, String> getRepository();
