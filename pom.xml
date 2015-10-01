@@ -5,7 +5,7 @@
 
     <groupId>com.kentchiu</groupId>
     <artifactId>spring-base</artifactId>
-    <version>0.1.9-SNAPSHOT</version>
+    <version>0.1.9</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.kentchiu</groupId>
             <artifactId>spring-apiblueprint</artifactId>
-            <version>0.1.1</version>
+            <version>0.1.2</version>
         </dependency>
     </dependencies>
 
