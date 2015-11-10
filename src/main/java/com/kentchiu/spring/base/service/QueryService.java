@@ -22,7 +22,7 @@ import java.util.Map;
 
 public interface QueryService<T> {
 
-    Logger logger = LoggerFactory.getLogger(CrudService.class);
+    Logger logger = LoggerFactory.getLogger(QueryService.class);
 
     static Long count(EntityManager em, String sql, Map<String, Object> params) {
         TypedQuery<Long> countQuery = em.createQuery(QueryUtils.createCountQueryFor(sql), Long.class);
