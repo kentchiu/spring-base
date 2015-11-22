@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CodeBaseException extends RuntimeException {
+public abstract class CodeBaseException extends RuntimeException {
 
     private String message;
     private List<String> contents = new ArrayList<>();
