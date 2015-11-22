@@ -11,6 +11,14 @@ public class TestBean {
     private Integer integerProp;
     private String stringProp;
     private String stringProp2;
+    private String stringProp3;
+    private BigDecimal bigDecimal;
+    private Date date;
+    private LocalDate localDate;
+    private LocalTime localTime;
+    private LocalDateTime localDateTime;
+    private Boolean booleanProp;
+    private SubBean subBean;
 
     public String getStringProp3() {
         return stringProp3;
@@ -28,13 +36,6 @@ public class TestBean {
         this.stringProp2 = stringProp2;
     }
 
-    private String stringProp3;
-    private BigDecimal bigDecimal;
-    private Date date;
-    private LocalDate localDate;
-    private LocalTime localTime;
-    private LocalDateTime localDateTime;
-
     public Boolean getBooleanProp() {
         return booleanProp;
     }
@@ -42,9 +43,6 @@ public class TestBean {
     public void setBooleanProp(Boolean booleanProp) {
         this.booleanProp = booleanProp;
     }
-
-    private Boolean booleanProp;
-    private SubBean subBean;
 
     public Integer getIntegerProp() {
         return integerProp;

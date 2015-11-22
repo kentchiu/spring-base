@@ -1,27 +1,21 @@
 package com.kentchiu.spring.base.service;
 
-import com.kentchiu.spring.base.service.query.Queryable;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.torpedoquery.jpa.Query;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class QueryServiceTest {
     @Test
@@ -70,7 +64,7 @@ public class QueryServiceTest {
         assertThat(pages.isFirst(), is(true));
         assertThat(pages.getSize(), is(10));
         assertThat(pages.getSort(), nullValue());
-        assertThat(pages.getNumberOfElements(),is(99)); // not 10 ?
+        assertThat(pages.getNumberOfElements(), is(99)); // not 10 ?
 
 
         assertThat(pages.getContent().size(), is(99));
@@ -92,7 +86,7 @@ public class QueryServiceTest {
         assertThat(pages.isFirst(), is(true));
         assertThat(pages.getSize(), is(10));
         assertThat(pages.getSort(), nullValue());
-        assertThat(pages.getNumberOfElements(),is(100));
+        assertThat(pages.getNumberOfElements(), is(100));
 
 
         assertThat(pages.getContent().size(), is(100));

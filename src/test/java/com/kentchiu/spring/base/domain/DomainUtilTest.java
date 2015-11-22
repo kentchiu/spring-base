@@ -62,7 +62,7 @@ public class DomainUtilTest {
         TestBean target = new TestBean();
         DomainUtil.copyNotNullProperties(source, target);
 
-        assertThat(target.getDate(), is(DateUtils.parseDate(dateStr,  "yyyy-MM-dd HH:mm:ss")));
+        assertThat(target.getDate(), is(DateUtils.parseDate(dateStr, "yyyy-MM-dd HH:mm:ss")));
     }
 
     @Test
