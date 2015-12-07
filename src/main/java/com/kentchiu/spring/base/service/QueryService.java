@@ -28,7 +28,8 @@ public interface QueryService<T> {
         TypedQuery<Long> countQuery = em.createQuery(QueryUtils.createCountQueryFor(sql), Long.class);
         params.forEach((k, v) -> countQuery.setParameter(k, v));
         try {
-            return countQuery.getSingleResult();
+            List<Long> counts = countQuery.getResultList();
+            return counts.stream().mapToLong(c -> c).sum();
         } catch (PersistenceException e) {
             logger.error("Query Error: " + sql, e);
             return 0L;
