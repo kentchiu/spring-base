@@ -28,8 +28,18 @@ public interface QueryService<T> {
         TypedQuery<Long> countQuery = em.createQuery(QueryUtils.createCountQueryFor(sql), Long.class);
         params.forEach((k, v) -> countQuery.setParameter(k, v));
         try {
-            List<Long> counts = countQuery.getResultList();
-            return counts.stream().mapToLong(c -> c).sum();
+            return countQuery.getSingleResult();
+        } catch (PersistenceException e) {
+            logger.error("Query Error: " + sql, e);
+            return 0L;
+        }
+    }
+
+    static Long countGroup(EntityManager em, String sql, Map<String, Object> params) {
+        TypedQuery<Long> countQuery = em.createQuery(QueryUtils.createCountQueryFor(sql), Long.class);
+        params.forEach((k, v) -> countQuery.setParameter(k, v));
+        try {
+            return Long.valueOf(countQuery.getResultList().size());
         } catch (PersistenceException e) {
             logger.error("Query Error: " + sql, e);
             return 0L;
