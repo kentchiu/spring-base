@@ -7,7 +7,7 @@ import java.util.List;
 
 public abstract class CodeBaseException extends RuntimeException {
 
-    private String message;
+    private String message = "";
     private List<String> contents = new ArrayList<>();
     private HttpStatus status;
 
