@@ -1,13 +1,27 @@
 package com.kentchiu.spring.base.service.query;
 
+import com.google.common.base.Splitter;
 import com.kentchiu.spring.attribute.AttributeInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.stream.Collectors;
 
 abstract public class PageableQuery<T> implements Queryable<T> {
     private Integer page = 0;
     private Integer size = 100;
+    private String sort;
+
+    public void setSort(String sort) {
+        this.sort = sort;
+    }
+
+    public String getSort() {
+        return sort;
+    }
 
     @Override
     public String toString() {
@@ -39,7 +53,28 @@ abstract public class PageableQuery<T> implements Queryable<T> {
     }
 
     public PageRequest getPageRequest() {
-        return new PageRequest(page, size);
+        if (StringUtils.isBlank(sort)) {
+            return new PageRequest(page, size);
+        } else {
+            Sort sort = createSort(this.sort);
+            return new PageRequest(page, size, sort);
+        }
     }
 
+    public Sort createSort(String sort) {
+        List<String> tokens = Splitter.on(",").trimResults().splitToList(sort);
+        List<Sort.Order> sorts = tokens.stream().map(token -> {
+            if (StringUtils.startsWith(token, "-")) {
+                return new Sort.Order(Sort.Direction.DESC, StringUtils.substringAfter(token, "-"));
+            } else if (StringUtils.startsWith(token, "+")) {
+                return new Sort.Order(Sort.Direction.ASC, StringUtils.substringAfter(token, "+"));
+            } else {
+                return new Sort.Order(Sort.Direction.ASC, token);
+            }
+        }).collect(Collectors.toList());
+        return new Sort(sorts);
+    }
+
+
 }
+

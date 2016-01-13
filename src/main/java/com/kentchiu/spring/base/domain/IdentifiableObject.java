@@ -20,7 +20,8 @@ public class IdentifiableObject {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("IdentifiableObject{");
+        final StringBuffer sb = new StringBuffer(getClass().getSimpleName() +
+                "{");
         sb.append("uuid='").append(uuid).append('\'');
         sb.append('}');
         return sb.toString();

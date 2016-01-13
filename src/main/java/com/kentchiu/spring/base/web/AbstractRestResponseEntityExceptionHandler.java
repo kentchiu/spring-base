@@ -2,20 +2,27 @@ package com.kentchiu.spring.base.web;
 
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.kentchiu.spring.base.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.MapBindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractRestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -99,6 +106,38 @@ public abstract class AbstractRestResponseEntityExceptionHandler extends Respons
         HttpStatus status = HttpStatus.NOT_FOUND;
         RestError error = new RestError(status.value(), ResourceNotFoundException.class.getSimpleName(), "Resource Not Found");
         return handleExceptionInternal(error, ex, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
+        RestError error = new RestError(HttpStatus.BAD_REQUEST.value(), Validators.DUPLICATED, "data duplicated");
+        error.setContent(ex.toString());
+        return this.handleExceptionInternal(error, ex, null, HttpStatus.BAD_REQUEST, request);
+    }
+
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        if (StringUtils.startsWith(ex.getMessage(), "Could not read document: Failed to parse Date value ")) {
+            Pattern pattern = Pattern.compile(".*format: \"(.*?)\"\\): Unparseable date: \"(.*?)\".*: (.*)\\[\"(.*?)\"]\\)");
+            Matcher matcher = pattern.matcher(ex.getMessage());
+
+            if (matcher.find()) {
+                String format = matcher.group(1);
+                String rejected = matcher.group(2);
+                String clazz = matcher.group(3);
+                String field = matcher.group(4);
+                MapBindingResult result = new MapBindingResult(ImmutableMap.of(field, rejected), clazz);
+                result.rejectValue(field, "typeMismatch", ex.getMessage());
+                return handleBindException(new BindException(result), headers, HttpStatus.BAD_REQUEST, request);
+            } else {
+                IllegalApiUsageException exception = new IllegalApiUsageException(ex.getMessage());
+                return this.handleIllegalApiUsageException(exception, request);
+            }
+        } else {
+            return this.handleExceptionInternal(ex, null, headers, status, request);
+        }
+
     }
 
 
