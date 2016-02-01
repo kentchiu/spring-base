@@ -94,4 +94,5 @@ public interface QueryService<T> {
         return q.list(getEntityManager());
     }
 
+
 }

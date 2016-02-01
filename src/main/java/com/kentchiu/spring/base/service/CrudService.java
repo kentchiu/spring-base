@@ -61,9 +61,28 @@ public interface CrudService<T> {
         getRepository().delete(entities);
     }
 
+
+    default void deleteInBatch(Iterable<T> entities) {
+        logger.info("delete entities : {}", entities);
+        getRepository().deleteInBatch(entities);
+    }
+
+    @Transactional
+    default void deleteByIds(Iterable<String> ids) {
+        logger.info("delete by ids : {}", ids);
+        for (String id : ids) {
+            getRepository().delete(id);
+        }
+    }
+
     default void deleteAll() {
         logger.warn("delete all entities");
         getRepository().deleteAll();
+    }
+
+    default void deleteAllInBatch() {
+        logger.warn("delete all entities in batch");
+        getRepository().deleteAllInBatch();
     }
 
 
