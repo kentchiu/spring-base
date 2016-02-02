@@ -42,7 +42,7 @@ public interface CrudService<T> {
 
     @Transactional(readOnly = true)
     default boolean exists(String id) {
-        return getRepository().equals(id);
+        return getRepository().exists(id);
     }
 
 
