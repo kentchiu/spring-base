@@ -15,12 +15,12 @@ abstract public class PageableQuery<T> implements Queryable<T> {
     private Integer size = 100;
     private String sort;
 
-    public void setSort(String sort) {
-        this.sort = sort;
-    }
-
     public String getSort() {
         return sort;
+    }
+
+    public void setSort(String sort) {
+        this.sort = sort;
     }
 
     @Override
