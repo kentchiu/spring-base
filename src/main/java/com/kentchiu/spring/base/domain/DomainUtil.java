@@ -3,7 +3,10 @@ package com.kentchiu.spring.base.domain;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.CaseFormat;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -17,10 +20,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DomainUtil {
@@ -146,6 +146,37 @@ public class DomainUtil {
             return null;
         }
     }
+
+    public static List<String> toCsv(List<? extends Object> domains) {
+        if (!domains.isEmpty()) {
+            List<String> results = new ArrayList<>();
+            String[] headers = DomainUtil.allPropertiesAsArray(domains.get(0).getClass());
+            results.add(Arrays.stream(headers)
+                    .map(h -> StringUtils.isBlank(h) ? "noName" : h)
+                    .map(h -> CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, h))
+                    .collect(Collectors.joining(",")));
+            for (Object domain : domains) {
+                List<String> values = new ArrayList<>();
+                for (String header : headers) {
+                    try {
+                        Object value = PropertyUtils.getProperty(domain, header);
+                        if (value == null) {
+                            values.add(null);
+                        } else {
+                            values.add(value.toString());
+                        }
+                    } catch (Exception e) {
+                        values.add(null);
+                    }
+                }
+                results.add(values.stream().collect(Collectors.joining(",")));
+            }
+            return results;
+        } else {
+            return ImmutableList.of();
+        }
+    }
+
 
     public static LocalDate toLocalDate(Date date) {
         if (date != null) {
